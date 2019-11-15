@@ -4,9 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,12 +38,18 @@ public class MainActivity extends AppCompatActivity {
     long mNow;
     Date mDate;
 
+    TextView tv_today_day;
+    ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        tv_today_day = findViewById(R.id.tv_today_day);
         rcvBoxOffice = findViewById(R.id.rcv_box_office);
+        progressBar = findViewById(R.id.pb);
         String strNum = initDate();
+        tv_today_day.setText(strNum);
         int num = Integer.parseInt(strNum.replaceAll("-", ""));
         String parseNum = Integer.toString(num - 7);
         Log.d("qwe", "onCreate: " + parseNum);
@@ -51,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         /*addConverterFactory(GsonConverterFactory.create())은
         Json을 우리가 원하는 형태로 만들어주는 Gson라이브러리와 Retrofit2에 연결하는 코드입니다 */
-
+        progressBar.setVisibility(View.VISIBLE);
         serviceBoxOffice = retrofit.create(BoxOfficeService.class);
         serviceBoxOffice.getBoxOffice(API_KEY, parseNum).enqueue(new Callback<Result>() {
             @Override
@@ -69,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
                     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false);
                     rcvBoxOffice.setLayoutManager(linearLayoutManager);
                     rcvBoxOffice.setAdapter(adapterBoxOffice);
+                    progressBar.setVisibility(View.GONE);
                 } else {
                     Log.d("retro", 2 + "Error");
                 }
@@ -87,5 +97,17 @@ public class MainActivity extends AppCompatActivity {
         mDate = new Date(mNow);
         String strNum = mmonth.format(mDate);
         return strNum;
+    }
+
+    @Override
+    public void onBackPressed() {
+//       super.onBackPressed(); 를 주석처리하여 뒤로 가기 키를 눌러도 액티비티가 종료되지 않게 하였습니다.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyAlertDialogStyle);
+        builder.setTitle("종료 확인");
+        builder.setMessage("정말로 종료하시겠습니까 ?");
+        builder.setPositiveButton("확인", (dialog, which) ->
+                finish());
+        builder.setNegativeButton("취소", null);
+        builder.show();
     }
 }
