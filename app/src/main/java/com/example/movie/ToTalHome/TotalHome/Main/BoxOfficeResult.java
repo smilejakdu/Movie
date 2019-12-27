@@ -1,4 +1,4 @@
-package com.example.movie;
+package com.example.movie.ToTalHome.TotalHome.Main;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

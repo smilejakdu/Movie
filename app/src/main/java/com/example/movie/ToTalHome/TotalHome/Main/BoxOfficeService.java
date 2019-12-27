@@ -1,4 +1,4 @@
-package com.example.movie;
+package com.example.movie.ToTalHome.TotalHome.Main;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

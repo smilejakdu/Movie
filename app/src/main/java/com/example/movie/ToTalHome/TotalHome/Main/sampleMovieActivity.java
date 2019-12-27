@@ -1,4 +1,4 @@
-package com.example.movie;
+package com.example.movie.ToTalHome.TotalHome.Main;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.example.movie.R;
 
 public class sampleMovieActivity extends AppCompatActivity {
 

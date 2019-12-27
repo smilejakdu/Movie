@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Movie</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="fragMovie">Movie</string>
+    <string name="fragMap">Map</string>
+    <string name="fragCall">Call</string>
+
 </resources>

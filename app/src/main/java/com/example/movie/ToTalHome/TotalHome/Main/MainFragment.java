@@ -1,15 +1,25 @@
-package com.example.movie;
+package com.example.movie.ToTalHome.TotalHome.Main;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.example.movie.MovieSearchActivity;
+import com.example.movie.R;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,8 +32,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-//http://www.kobis.or.kr/kobisopenapi/homepg/main/main.do
-public class MainActivity extends AppCompatActivity {
+public class MainFragment extends Fragment {
     final String BASE_URL = "http://www.kobis.or.kr";
     String API_KEY = "69054150552e63b9006e9964f1c5ac11";
 
@@ -38,18 +47,40 @@ public class MainActivity extends AppCompatActivity {
     long mNow;
     Date mDate;
 
-    TextView tv_today_day;
+    TextView tv_today_day, movieSearch;
     ProgressBar progressBar;
 
+    public MainFragment() {
+
+    }
+
+    public static MainFragment newInstance() {
+        return new MainFragment();
+    }
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        tv_today_day = findViewById(R.id.tv_today_day);
-        rcvBoxOffice = findViewById(R.id.rcv_box_office);
-        progressBar = findViewById(R.id.pb);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_main, container, false);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        rcvBoxOffice = view.findViewById(R.id.rcv_box_office);
+        progressBar = view.findViewById(R.id.pb);
+
+        movieSearch = view.findViewById(R.id.tv_movie_search);
+        movieSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), MovieSearchActivity.class);
+                startActivity(intent);
+            }
+        });
         String strNum = initDate();
-        tv_today_day.setText(strNum);
         int num = Integer.parseInt(strNum.replaceAll("-", ""));
         String parseNum = Integer.toString(num - 7);
         Log.d("qwe", "onCreate: " + parseNum);
@@ -74,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
                         weeklyBoxOfficeLists.add(weeklyBoxOffice);
                     }
 
-                    adapterBoxOffice = new BoxOfficeAdapter(weeklyBoxOfficeLists, MainActivity.this);
-                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false);
+                    adapterBoxOffice = new BoxOfficeAdapter(weeklyBoxOfficeLists, getContext());
+                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
                     rcvBoxOffice.setLayoutManager(linearLayoutManager);
                     rcvBoxOffice.setAdapter(adapterBoxOffice);
                     progressBar.setVisibility(View.GONE);
@@ -89,25 +120,13 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
+
 
     private String initDate() {
         mNow = System.currentTimeMillis();
         mDate = new Date(mNow);
         String strNum = mmonth.format(mDate);
         return strNum;
-    }
-
-    @Override
-    public void onBackPressed() {
-//       super.onBackPressed(); 를 주석처리하여 뒤로 가기 키를 눌러도 액티비티가 종료되지 않게 하였습니다.
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.MyAlertDialogStyle);
-        builder.setTitle("종료 확인");
-        builder.setMessage("정말로 종료하시겠습니까 ?");
-        builder.setPositiveButton("확인", (dialog, which) ->
-                finish());
-        builder.setNegativeButton("취소", null);
-        builder.show();
     }
 }
