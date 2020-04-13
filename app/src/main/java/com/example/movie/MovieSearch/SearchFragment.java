@@ -1,15 +1,17 @@
 package com.example.movie.MovieSearch;
 
 import android.content.Context;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -31,32 +33,26 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SearchFragment extends Fragment implements View.OnClickListener {
-
     private RecyclerView mRvMovies;
     private RecyclerView.LayoutManager mLayoutManager;
-
     private MovieAdapter mMovieAdapter;
-
     private EditText mEtKeyword;
-    private Button mBtnSearch;
-
+    private ImageView mBtnSearch;
     private InputMethodManager mInputMethodManager;
 
     public SearchFragment() {
-        // Required empty public constructor
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View root = inflater.inflate(R.layout.fragment_movie, container,
-                false);
-        setupRecyclerView(root);
-        setupSearchView(root);
-        return root;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_movie, container, false);
+        setupRecyclerView(view);
+        setupSearchView(view);
+        return view;
     }
 
     private void setupRecyclerView(View view) {
+
         mRvMovies = view.findViewById(R.id.rv_movies);
         mRvMovies.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(getContext());
@@ -75,15 +71,27 @@ public class SearchFragment extends Fragment implements View.OnClickListener {
 
     private void setupSearchView(View view) {
         mEtKeyword = view.findViewById(R.id.et_keyword);
-        mBtnSearch = view.findViewById(R.id.btn_search);
+        mBtnSearch = view.findViewById(R.id.iv_search);
         mBtnSearch.setOnClickListener(this);
         mInputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        mEtKeyword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    hideKeyboard();
+                    startSearch(mEtKeyword.getText().toString());
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_search:
+            case R.id.iv_search:
                 hideKeyboard();
                 startSearch(mEtKeyword.getText().toString());
                 break;

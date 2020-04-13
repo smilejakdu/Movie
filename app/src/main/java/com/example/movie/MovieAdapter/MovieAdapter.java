@@ -1,32 +1,34 @@
 package com.example.movie.MovieAdapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.movie.MovieModel.Item;
 import com.example.movie.R;
+import com.example.movie.ToTalHome.TotalHome.Main.sampleMovieActivity;
 
 import java.util.ArrayList;
 
 public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context mContext;
-
     private ArrayList<Item> mMovieInfoArrayList;
 
     public MovieAdapter(Context context, ArrayList<Item> movieInfoArrayList) {
-        mContext = context;
-        mMovieInfoArrayList = movieInfoArrayList;
+        this.mContext = context;
+        this.mMovieInfoArrayList = movieInfoArrayList;
     }
 
     @Override
@@ -41,6 +43,8 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         MovieViewHolder movieViewHolder = (MovieViewHolder) holder;
 
         Item item = mMovieInfoArrayList.get(position);
+
+
         movieViewHolder.mTvTitle.setText(Html.fromHtml(item.getTitle()));
         movieViewHolder.mRbUserRating.setRating(Float.parseFloat(item.getUserRating()) / 2);
         movieViewHolder.mTvPubData.setText(item.getPubDate());
@@ -50,6 +54,18 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         Glide.with(mContext)
                 .load(item.getImage())
                 .into(movieViewHolder.getImage());
+
+        movieViewHolder.ll_movie_box.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Intent intent = new Intent(mContext, sampleMovieActivity.class);
+                String movieTitle = item.getTitle().replace("<b>", "").replace("</b>", "");
+                intent.putExtra("title", movieTitle);
+                mContext.startActivity(intent);
+            }
+        });
+
     }
 
     @Override
@@ -69,7 +85,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     public static class MovieViewHolder extends RecyclerView.ViewHolder {
-
+        private LinearLayout ll_movie_box;
         private ImageView mIvPoster;
         private TextView mTvTitle;
         private RatingBar mRbUserRating;
@@ -79,6 +95,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         MovieViewHolder(View view) {
             super(view);
+            ll_movie_box = view.findViewById(R.id.ll_movie_box);
             mIvPoster = view.findViewById(R.id.iv_poster);
             mTvTitle = view.findViewById(R.id.tv_title);
             mRbUserRating = view.findViewById(R.id.rb_user_rating);

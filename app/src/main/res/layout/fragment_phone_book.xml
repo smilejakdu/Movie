@@ -32,7 +32,7 @@
                     android:layout_gravity="center"
                     android:gravity="center"
                     android:text="누구랑 같이볼까!!!"
-                    android:textColor="@color/colorbase"
+                    android:textColor="@color/colorBlack"
                     android:textSize="26sp"
                     android:textStyle="bold" />
 

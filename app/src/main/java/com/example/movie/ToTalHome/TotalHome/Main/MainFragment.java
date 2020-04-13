@@ -1,15 +1,9 @@
 package com.example.movie.ToTalHome.TotalHome.Main;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,37 +12,30 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.movie.MovieSearchActivity;
 import com.example.movie.R;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class MainFragment extends Fragment {
-    final String BASE_URL = "http://www.kobis.or.kr";
-    String API_KEY = "69054150552e63b9006e9964f1c5ac11";
-
-    Retrofit retrofit;
-    BoxOfficeService serviceBoxOffice;
-    RecyclerView rcvBoxOffice;
-    BoxOfficeAdapter adapterBoxOffice;
-
-    List<WeeklyBoxOfficeList> weeklyBoxOfficeLists = new ArrayList<>();
-
-    SimpleDateFormat mmonth = new SimpleDateFormat("YYYY-MM-dd");
-    long mNow;
-    Date mDate;
-
-    TextView tv_today_day, movieSearch;
+    RecyclerView recyclerView;
+    TextView movieSearch;
     ProgressBar progressBar;
+    private final String WATING_GREETINGS = "please wating ~ ^ ^ ";
+    private ArrayList<NowMovieItem> list = new ArrayList();
 
     public MainFragment() {
 
@@ -69,9 +56,7 @@ public class MainFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        rcvBoxOffice = view.findViewById(R.id.rcv_box_office);
-        progressBar = view.findViewById(R.id.pb);
-
+        recyclerView = view.findViewById(R.id.rcv_now_movie);
         movieSearch = view.findViewById(R.id.tv_movie_search);
         movieSearch.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,53 +65,50 @@ public class MainFragment extends Fragment {
                 startActivity(intent);
             }
         });
-        String strNum = initDate();
-        int num = Integer.parseInt(strNum.replaceAll("-", ""));
-        String parseNum = Integer.toString(num - 7);
-        Log.d("qwe", "onCreate: " + parseNum);
-        //Retrofit 객체생성
-        retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        /*addConverterFactory(GsonConverterFactory.create())은
-        Json을 우리가 원하는 형태로 만들어주는 Gson라이브러리와 Retrofit2에 연결하는 코드입니다 */
-        progressBar.setVisibility(View.VISIBLE);
-        serviceBoxOffice = retrofit.create(BoxOfficeService.class);
-        serviceBoxOffice.getBoxOffice(API_KEY, parseNum).enqueue(new Callback<Result>() {
-            @Override
-            public void onResponse(Call<Result> call, Response<Result> response) {
-                if (response.isSuccessful()) {
-                    Log.d("retro", 1 + "");
-                    Result result = response.body();
-                    BoxOfficeResult boxOfficeResult = result.getBoxOfficeResult();
-                    List<WeeklyBoxOfficeList> weeklyBoxOfficeListLIst2 = boxOfficeResult.getWeeklyBoxOfficeList();
-                    for (WeeklyBoxOfficeList weeklyBoxOffice : weeklyBoxOfficeListLIst2) {
-                        weeklyBoxOfficeLists.add(weeklyBoxOffice);
-                    }
-
-                    adapterBoxOffice = new BoxOfficeAdapter(weeklyBoxOfficeLists, getContext());
-                    LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
-                    rcvBoxOffice.setLayoutManager(linearLayoutManager);
-                    rcvBoxOffice.setAdapter(adapterBoxOffice);
-                    progressBar.setVisibility(View.GONE);
-                } else {
-                    Log.d("retro", 2 + "Error");
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Result> call, Throwable t) {
-
-            }
-        });
+        new Description().execute();
     }
 
+    private class Description extends AsyncTask<Void, Void, Void> {
 
-    private String initDate() {
-        mNow = System.currentTimeMillis();
-        mDate = new Date(mNow);
-        String strNum = mmonth.format(mDate);
-        return strNum;
+        private ProgressDialog progressDialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //진행다일로그 시작
+            progressDialog = new ProgressDialog(getContext());
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setMessage(WATING_GREETINGS);
+            progressDialog.show();
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                Document doc = Jsoup.connect("https://movie.naver.com/movie/running/current.nhn").get();
+                Elements mElementDataSize = doc.select("ul[class=lst_detail_t1]").select("li");
+                for (Element elem : mElementDataSize) {
+                    String myTitle = elem.select("dt[class=tit] a").text();
+                    String myImgUrl = elem.select("div[class=thumb] a img").attr("src");
+                    String director = elem.select("dt[class=tit_t2]").next().first().select("a").text();
+                    list.add(new NowMovieItem(myImgUrl, myTitle, director));
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+
+            NowMovieAdapter nowMovieAdapter = new NowMovieAdapter(list, getContext());
+            RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getContext(),2);
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setAdapter(nowMovieAdapter);
+            progressDialog.dismiss();
+        }
     }
 }

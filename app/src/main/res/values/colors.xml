@@ -5,7 +5,7 @@
     <color name="colorAccent">#D81B60</color>
     <color name="colorWhite">#ffffff</color>
     <!-- base color-->
-    <color name="colorbase">#B8C533</color>
-    <color name="bottomColor">#DCF0AC</color>
+    <color name="colorbase">#EC7063</color>
+    <color name="bottomColor">#000000</color>
     <color name="colorBlack">#000000</color>
 </resources>
